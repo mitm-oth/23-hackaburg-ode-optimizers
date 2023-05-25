@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime as dt
 
 import influxdb_client
 from influxdb_client import InfluxDBClient, Point, WritePrecision
@@ -14,12 +15,9 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 
 
 df = pd.read_parquet("data")
-colnames = df.columns
+#print(df.head())
+df["rtctime"] = pd.to_datetime(df["rtctime"], unit="ms")
+df.set_index("rtctime", inplace=True)
+#print(df.head())
 
-for i, row in df.iterrows():
-    point = Point("sensor")
-    for c in colnames[1:]:
-        point = point.field(c, row[c])
-    point.time(row["rtctime"], WritePrecision.MS)
-    
-    write_api.write(bucket=bucket, org=org, record=point)
+write_api.write(bucket, record=df, data_frame_measurement_name="sensors")
