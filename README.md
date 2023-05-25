@@ -6,7 +6,7 @@ data: <https://hackaburg-vitesco-challenge.s3.eu-central-1.amazonaws.com/measure
 
 ## coding instance
 
-`ssh ip-172-31-35-165.eu-west-1.compute.internal`
+`ssh ec2-user@ec2-34-242-2-109.eu-west-1.compute.amazonaws.com`
 
 ## influxdb
 
