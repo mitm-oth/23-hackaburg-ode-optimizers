@@ -1,6 +1,6 @@
 # Hackaburg 2023
 
-=> Nordcup data analysis
+ML data analysis of timeseries driving data
 
 data: <https://hackaburg-vitesco-challenge.s3.eu-central-1.amazonaws.com/measurements.zip>
 
