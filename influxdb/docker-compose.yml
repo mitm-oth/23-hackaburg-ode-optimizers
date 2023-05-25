@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  influxdb:
+    image: influxdb:2.7-alpine
+    restart: always
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - influxdb:/var/lib/influxdb2
+    ports:
+      - 8086:8086
+
+
+volumes:
+  influxdb:
