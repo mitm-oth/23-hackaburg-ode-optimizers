@@ -11,7 +11,9 @@ data: <https://hackaburg-vitesco-challenge.s3.eu-central-1.amazonaws.com/measure
 ## influxdb
 
 admin
+
 i~6@bib_e$,66Lk
+
 4twszgEIHmgV0NfWQOkLHpIp-XfQoMXgiBELM5RlTWCdedWxTaX0ktqkfruSORou0s8vdYedkrNQqV2lSVqDVw==
 
 
