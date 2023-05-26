@@ -6,6 +6,7 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 from scipy import signal
 from cutter import Cutter
+from scipy.optimize import minimize
 
 
 def convolution(df, w=100):
@@ -44,10 +45,26 @@ def odefun(t, target_temp, coefficients, interpolations):
     return val
 
 
+def costfun(coefficients, df, interpolations):
+    t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
+    y0 = [df.iloc[0]["target_temperature"]]
+    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations), dense_output=True)
+    
+    # integrate squared error #! requires equidistant time steps in dataframe
+    ts = np.array(df["rtctime"])
+    solvals = sol.sol(ts)
+    err = np.linalg.norm(solvals - np.array(df["target_temperature"]))
+    
+    print(f"called costfun {err}")
+    
+    return err
+
+
 if __name__ == "__main__":
     # get example dataframe
     cutter = Cutter("data", gap_ms=10)
     df = cutter.get_biggest_track()
+    df = df.iloc[-1100:] # cut dataframe to last 5000 rows
     print(df.head())
     print(df.shape)
     
@@ -55,12 +72,11 @@ if __name__ == "__main__":
     columns = ["target_temperature", "ambient_temp", "feature_c"]  #! ambient temp has to be first after target coefficient/interpolation
     
     # convolution
-    w = 100
+    w = 7
     df = convolution(df, w)
-    df.plot(x="rtctime", y=columns)
-    plt.plot()
-    plt.title("features after colvolution")
-    plt.show()
+    #df.plot(x="rtctime", y=columns)
+    #plt.title("features after colvolution")
+    #plt.show()
 
     # interpolate
     interpolations = interpolation(df, columns)
@@ -69,9 +85,29 @@ if __name__ == "__main__":
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
     y0 = [df.iloc[0]["target_temperature"]]
     coefficients = np.array([0.005, 0.0001])
-    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations))
+    sol0 = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations))
     
-    plt.plot(sol.t, sol.y.T, label="prediction")
+    #plt.plot(sol.t, sol.y.T, label="prediction")
+    #plt.plot(df["rtctime"], df["target_temperature"], label="target")
+    #plt.legend()
+    #plt.show()
+    
+    
+    
+    # optimize
+    res = minimize(costfun, coefficients, args=(df, interpolations), options={"disp": True}, callback=lambda xk: print(xk))
+    print(res)
+    
+    # solve ode and plot prediction for new coefficients
+    t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
+    y0 = [df.iloc[0]["target_temperature"]]
+    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(res.x, interpolations))
+    
+    
     plt.plot(df["rtctime"], df["target_temperature"], label="target")
+    plt.plot(df["rtctime"], df["ambient_temp"], label="ambient_temp")
+    plt.plot(df["rtctime"], df["feature_c"], label="feature_c")
+    plt.plot(sol0.t, sol0.y.T, label="prediction init")
+    plt.plot(sol.t, sol.y.T, label="prediction")
     plt.legend()
     plt.show()
