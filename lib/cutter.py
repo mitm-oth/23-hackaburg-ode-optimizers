@@ -2,9 +2,9 @@ import pandas as pd
 
 
 class Cutter():
-    def __init__(self, data_folder, gap_ms=10000, exclude_track_ms=2000):
+    def __init__(self, data_path, gap_ms=10000, exclude_track_ms=2000):
         # * read parquet
-        df = pd.read_parquet(data_folder)
+        df = pd.read_parquet(data_path)
         df = df.sort_values("rtctime")
         assert (df.shape == (8159719, 10))
 
@@ -28,6 +28,7 @@ class Cutter():
         long_track_ids = count_df[count_df["count"]
                                   > exclude_track_ms].track_id.to_list()
 
+        self.count_df = count_df
         self.df = df[df["track_id"].isin(long_track_ids)]
 
     def get_gen(self):
@@ -39,6 +40,10 @@ class Cutter():
             if next_df.empty:
                 continue
             yield next_df
+
+    def get_biggest_track(self):
+        track_id = self.count_df["track_id"].iloc[0]
+        return self.df[self.df["track_id"] == track_id]
 
 
 # for i in Cutter().get_gen():
