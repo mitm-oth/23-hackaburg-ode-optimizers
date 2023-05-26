@@ -45,10 +45,6 @@ def plot_intervals(df):
     #plt.savefig("coverage.pdf")
     plt.show()
 
-def time_deltas(paths):
-    for path in paths:
-        df = pd.read_parquet(path)
-
 if __name__ == "__main__":
     paths = get_sorted_paths("./data", "*.parquet")
     #pprint(paths)
