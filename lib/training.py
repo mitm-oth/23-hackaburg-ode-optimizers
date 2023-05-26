@@ -8,6 +8,8 @@ from scipy import signal
 from cutter import Cutter
 from scipy.optimize import minimize
 
+IVP_METHOD = "Radau"
+
 
 def convolution(df, w=100):
     conv = {}
@@ -50,14 +52,14 @@ def odefun(t, target_temp, coefficients, interpolations):
 def costfun(coefficients, df, interpolations):
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
     y0 = [df.iloc[0]["target_temperature"]]
-    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations), dense_output=True)
+    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations), dense_output=True, method=IVP_METHOD, vectorized=True)
     
     # integrate squared error #! requires equidistant time steps in dataframe
     ts = np.array(df["rtctime"])
     solvals = sol.sol(ts)
     err = np.linalg.norm(solvals - np.array(df["target_temperature"]))
     
-    print(f"called costfun {err}")
+    print(f"called costfun {err}: {coefficients}")
     
     return err
 
@@ -74,7 +76,7 @@ if __name__ == "__main__":
     columns = ["target_temperature", "ambient_temp", "feature_c", "feature_ct", "feature_motorspeed", "car_speed"]  #! ambient temp has to be first after target coefficient/interpolation
     
     # convolution
-    w = 7
+    w = 20
     df = convolution(df, w)
     #df.plot(x="rtctime", y=columns)
     #plt.title("features after colvolution")
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
     y0 = [df.iloc[0]["target_temperature"]]
     coefficients = np.array([0.005, 0.0001, 0.2, 0.2, 0.2])
-    sol0 = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations))
+    sol0 = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations), method=IVP_METHOD)
     
     #plt.plot(sol.t, sol.y.T, label="prediction")
     #plt.plot(df["rtctime"], df["target_temperature"], label="target")
@@ -103,8 +105,7 @@ if __name__ == "__main__":
     # solve ode and plot prediction for new coefficients
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
     y0 = [df.iloc[0]["target_temperature"]]
-    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(res.x, interpolations))
-    
+    sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(res.x, interpolations), method=IVP_METHOD)
     
     plt.plot(df["rtctime"], df["target_temperature"], label="target")
     plt.plot(df["rtctime"], df["ambient_temp"], label="ambient_temp")
