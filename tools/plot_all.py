@@ -29,7 +29,7 @@ def all_file_names(paths):
         p = Path("./plots/") / (path.name + ".pdf")
         ps.append(str(p))
         #print(p)
-    print(' '.join(ps))
+    return ' '.join(ps)
 
 def plot_all(paths):
     print("plot all!")
@@ -44,14 +44,15 @@ def plot_all(paths):
         #plt.show()
         plt.close()
 
-def make_unite(out_file="./all_parquets.pdf"):
+def make_unite(replot=True, out_file="./all_parquets.pdf"):
     paths = get_sorted_paths()
-    plot_all(paths)
-    unite_cmd = "pdfunite " + all_file_names(paths) + out_file
+    if replot:
+        plot_all(paths)
+    unite_cmd = "pdfunite " + all_file_names(paths) + ' ' + out_file
     os.system(unite_cmd)
 
 if __name__ == "__main__":
     #min_max(paths, dfs)
     #plot_all(paths, dfs)
-    make_unite()
+    make_unite(replot=False)
     
