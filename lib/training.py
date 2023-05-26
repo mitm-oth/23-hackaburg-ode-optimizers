@@ -37,6 +37,8 @@ def interpolation(df, columns):
 
 # function defining the ode
 def odefun(t, target_temp, coefficients, interpolations):
+    assert len(coefficients) == len(interpolations)
+    
     val = coefficients[0] * (interpolations[0](t) - target_temp) #! ambient temp has to be first coefficient/interpolation
     
     for c, f in zip(coefficients[1:], interpolations[1:]):
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     print(df.shape)
     
     # specify relevant columns
-    columns = ["target_temperature", "ambient_temp", "feature_c"]  #! ambient temp has to be first after target coefficient/interpolation
+    columns = ["target_temperature", "ambient_temp", "feature_c", "feature_ct", "feature_motorspeed", "car_speed"]  #! ambient temp has to be first after target coefficient/interpolation
     
     # convolution
     w = 7
@@ -84,7 +86,7 @@ if __name__ == "__main__":
     # solve ode and plot prediction
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
     y0 = [df.iloc[0]["target_temperature"]]
-    coefficients = np.array([0.005, 0.0001])
+    coefficients = np.array([0.005, 0.0001, 0.2, 0.2, 0.2])
     sol0 = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations))
     
     #plt.plot(sol.t, sol.y.T, label="prediction")
