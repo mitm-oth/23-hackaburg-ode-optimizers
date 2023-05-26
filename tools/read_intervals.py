@@ -42,11 +42,11 @@ def plot_intervals(df):
     plt.title("Data coverage")
     plt.xlabel("Time")
     plt.ylabel("Parquet file number")
-    #plt.savefig("coverage.pdf")
+    plt.savefig("coverage.pdf")
     plt.show()
 
 if __name__ == "__main__":
-    paths = get_sorted_paths("./data", "*.parquet")
+    paths = get_sorted_paths("../data", "*.parquet")
     #pprint(paths)
     df = get_intervals(paths)
     print(df)
