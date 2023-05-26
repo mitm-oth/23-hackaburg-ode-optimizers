@@ -31,18 +31,25 @@ def all_file_names(paths):
         #print(p)
     return ' '.join(ps)
 
+def plot_one(path, save=False, show=False):
+    path = Path(path)
+    df = pd.read_parquet(path)
+    df["rtctime"] = pd.to_datetime(df["rtctime"], unit="ms")
+    print(path)
+    df.plot(x="rtctime", y=["target_temperature", "ambient_temp", "feature_ct", "car_speed", "soc", "lat"]) 
+    plt.title(path)
+    savepath = Path("./plots/") / (path.name + ".pdf")
+    if save:
+        plt.savefig(savepath)
+    if show:
+        plt.show()
+    plt.close()
+
+
 def plot_all(paths):
     print("plot all!")
     for path in paths:
-        df = pd.read_parquet(path)
-        df["rtctime"] = pd.to_datetime(df["rtctime"], unit="ms")
-        print(path)
-        df.plot(x="rtctime", y=["ambient_temp", "target_temperature"]) 
-        plt.title(path)
-        savepath = Path("./plots/") / (path.name + ".pdf")
-        plt.savefig(savepath)
-        #plt.show()
-        plt.close()
+        plot_one(path)
 
 def make_unite(replot=True, out_file="./all_parquets.pdf"):
     paths = get_sorted_paths()
@@ -54,5 +61,6 @@ def make_unite(replot=True, out_file="./all_parquets.pdf"):
 if __name__ == "__main__":
     #min_max(paths, dfs)
     #plot_all(paths, dfs)
-    make_unite(replot=False)
-    
+
+    #make_unite(replot=False)
+    plot_one("../data/58.parquet", show=True)
