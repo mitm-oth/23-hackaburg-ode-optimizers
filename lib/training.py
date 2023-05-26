@@ -26,21 +26,20 @@ def convolution(df, w=100):
     
 
 def interpolation(df, columns):
-    coefficients = {}
+    interpolations = []
     for c in columns:
         if c == "rtctime" or c == "target_temperature":
             continue
-        coefficients[c] = interp1d(df["rtctime"], df[c], kind="linear")
+        interpolations.append(interp1d(df["rtctime"], df[c], kind="linear"))
     
-    return coefficients
+    return interpolations
 
 # function defining the ode
 def odefun(t, target_temp, coefficients, interpolations):
-    val = coefficients["ambient_temp"] * (interpolations["ambient_temp"](t) - target_temp)
+    val = coefficients[0] * (interpolations[0](t) - target_temp) #! ambient temp has to be first coefficient/interpolation
     
-    for col, c in coefficients.items():
-        if c != "ambient_temp":
-            val += c * interpolations[col](t)
+    for c, f in zip(coefficients[1:], interpolations[1:]):
+            val += c * f(t)
             
     return val
 
@@ -53,11 +52,12 @@ if __name__ == "__main__":
     print(df.shape)
     
     # specify relevant columns
-    columns = ["target_temperature", "ambient_temp", "feature_c"]
+    columns = ["target_temperature", "ambient_temp", "feature_c"]  #! ambient temp has to be first after target coefficient/interpolation
     
     # convolution
-    df = convolution(df, 100)
-    df.plot(x="rtctime", y=columns) #y=["target_temperature", "ambient_temp", "car_speed", "feature_c"])
+    w = 100
+    df = convolution(df, w)
+    df.plot(x="rtctime", y=columns)
     plt.plot()
     plt.title("features after colvolution")
     plt.show()
@@ -67,9 +67,10 @@ if __name__ == "__main__":
 
     # solve ode and plot prediction
     t_span = [df.iloc[0]["rtctime"], df.iloc[-1]["rtctime"]]
-    coefficients = {"ambient_temp": 0.005, "feature_c": 0.0001}
     y0 = [df.iloc[0]["target_temperature"]]
+    coefficients = np.array([0.005, 0.0001])
     sol = solve_ivp(fun=odefun, t_span=t_span, y0=y0, args=(coefficients, interpolations))
+    
     plt.plot(sol.t, sol.y.T, label="prediction")
     plt.plot(df["rtctime"], df["target_temperature"], label="target")
     plt.legend()
