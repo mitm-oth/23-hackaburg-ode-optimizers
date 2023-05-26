@@ -2,9 +2,9 @@ import pandas as pd
 
 
 class Cutter():
-    def __init__(self, data_folder, gap_ms=10000, exclude_track_ms=2000):
+    def __init__(self, data_path, gap_ms=10000, exclude_track_ms=2000):
         # * read parquet
-        df = pd.read_parquet(data_folder)
+        df = pd.read_parquet(data_path)
         df = df.sort_values("rtctime")
         assert (df.shape == (8159719, 10))
 
