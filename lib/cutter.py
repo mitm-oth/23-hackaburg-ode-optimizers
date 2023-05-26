@@ -1,39 +1,32 @@
 import pandas as pd
 
-ms_gap = 10000
-
 
 class Cutter():
-    def __init__(self, data_folder):
+    def __init__(self, data_folder, gap_ms=10000, exclude_track_ms=2000):
         # * read parquet
-
         df = pd.read_parquet(data_folder)
         df = df.sort_values("rtctime")
         assert (df.shape == (8159719, 10))
 
         # * find beginning of a record by finding gaps in rtctime
-
         deltas = df['rtctime'].diff()[1:]
-
-        df["rtc_gap"] = deltas[deltas > ms_gap]
+        df["rtc_gap"] = deltas[deltas > gap_ms]
 
         # * add column is_track_beginning
-
         df["is_track_beginning"] = df['rtc_gap'].apply(
-            lambda x: 1 if x > ms_gap else 0)
-
+            lambda x: 1 if x > gap_ms else 0)
         df.at[0, "is_track_beginning"] = 1
 
         # * aggregate track_id based on rtc_gap
-
         df["track_id"] = df.is_track_beginning.cumsum(axis="index")
 
         # * dropping tracks that are smaller than 20s
         count_df = df.groupby(['track_id'])['track_id'].count()\
             .reset_index(name='count') \
             .sort_values(['count'], ascending=False)
-        # short_track_ids = count_df[count_df["count"] <= 2000].track_id.to_list()
-        long_track_ids = count_df[count_df["count"] > 2000].track_id.to_list()
+        # short_track_ids = count_df[count_df["count"] <= exclude_track_ms].track_id.to_list()
+        long_track_ids = count_df[count_df["count"]
+                                  > exclude_track_ms].track_id.to_list()
 
         self.df = df[df["track_id"].isin(long_track_ids)]
 
