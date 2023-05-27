@@ -20,7 +20,7 @@ def heat_prob(t, y, c1, x2):
 if __name__ == "__main__":
     c1 = 1
     c2 = 1
-    sol = integrate.solve_ivp(heat_prob, [0,30], [20], method="Radau", dense_output=True, args=(c1, c2))
+    sol = integrate.solve_ivp(heat_prob, [0,30], [20], method="Radau", vectorized=True, dense_output=True, args=(c1, c2))
     if not sol.success:
         print(sol.message)
     
