@@ -100,9 +100,10 @@ if __name__ == "__main__":
     #path = "../data/58.parquet"
     #path = "../data/81.parquet"
     #path = "../data/36.parquet"
-    #num = 58
-    num = 7
+    num = 58
+    #num = 7
     #num = 3
+
     generate_plots_for(num)
 
 sys.exit()
@@ -111,84 +112,6 @@ sys.exit()
 ###############################################################################
 ###############################################################################
 ###############################################################################
-
-#from dataclasses import dataclass
-
-def get_sorted_paths(root="../data", glob="*.parquet"):
-    paths = list(Path(root).rglob(glob))
-    paths.sort()
-    paths.sort(key=lambda p: len(str(p)))
-    return paths
-
-#@dataclass
-#class Measurements:
-#    time: Any
-#    target: Any
-#    ambient: Any
-#    current: Any
-#    speed: Any
-#    cooling: Any
-
-w = 1
-#w_target  = 10000
-#w_ambient = 10000
-#w_current = 30000
-#w_speed   = 7000
-#w_cooling = 10000
-
-w_target  = 30000
-w_ambient = 30000
-w_current = 30000
-w_speed   = 30000
-w_cooling = 30000
-
-
-max_window = max(w, w_target, w_ambient, w_current, w_speed, w_cooling)
-
-def running_mean(data, window_len):
-    return signal.convolve(data, np.ones(window_len), 'valid') / window_len
-
-
-split = -n+max_window
-time    = running_mean(time, 1)[split:]
-target  = running_mean(target, w_target)[split:]
-ambient = running_mean(ambient, w_ambient)[split:]
-current = running_mean(current, w_current)[split:]
-speed   = running_mean(speed, w_speed)[split:]
-cooling = running_mean(cooling, w_cooling)[split:]
-
-f_target = interpolate.interp1d(time, target)
-f_ambient = interpolate.interp1d(time, ambient)
-f_current = interpolate.interp1d(time, current)
-f_speed = interpolate.interp1d(time, speed)
-f_cooling = interpolate.interp1d(time, cooling)
-
-
-
-
-def heat_transfer(t, y, c_ambient, c_current, c_speed, c_cooling):
-    return c_ambient * (f_ambient(t) - y) + c_current * f_current(t) + c_speed * f_speed(t) + c_cooling * f_cooling(t)
-
-
-#coeff = np.array([1e-6, 0., 9e-7, 1e-7])
-coeff = np.array([2.4e-6, 1e-8, 1.5e-6, 1e-5])
-
-t_span = [time[0], time[-1]]
-sol = integrate.solve_ivp(heat_transfer, t_span, [target[0]], method="Radau", t_eval=time,
-        dense_output=False, vectorized=True, args=coeff) #, rtol=1e-6, atol=1e-9)
-
-plt.plot(time[::10], target[::10], label="target")
-plt.plot(time[::10], ambient[::10], label="ambient")
-plt.plot(time[::10], current[::10], label="current")
-plt.plot(time[::10], speed[::10], label="speed")
-plt.plot(time[::10], cooling[::10], label="cooling")
-plt.plot(time[::10], sol.y.T[::10], label="prediction")
-plt.title(f"Coefficients: {coeff}")
-plt.legend(loc="upper right")
-plt.savefig("it_works.pdf")
-plt.show()
-
-sys.exit()
 
 def err_sq(t, predicted):
     return (f_target(t) - predicted(t))**2
@@ -205,12 +128,11 @@ def cost(coeff):
     return norm
 
 def run(initial_coeff):
-    #initial_coeff = np.array([1., 1., 1., 1.])
     res = optimize.minimize(cost, initial_coeff, callback=lambda x: print(f"Minimize step: {x}"))
     print(res)
 
-
 if __name__ == "__main__":
-    run(coeff)
+    coeff = np.array([2.4e-6, 1e-8, 1.5e-6, 1e-5])
+    #run(coeff)
 
 
