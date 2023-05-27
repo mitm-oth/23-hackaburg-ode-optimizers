@@ -53,46 +53,57 @@ def solve_heat_equation(heat_transfer, data, coeff):
 
     return sol.y.T
 
-def plot_all(data, predicted, title, *, only_prediction=False, show=False, savepath=None):
+def plot_all(data, predicted, title, *, target=True, prediction=True, sensors=True, show=False, savepath=None):
     plt.figure(figsize=(8, 6))
     timestamps = [datetime.fromtimestamp(x / 1000.0) for x in data.time[::10]]
-    plt.plot(timestamps, data.target[::10], label="target")
-    if not only_prediction:
+    if target:
+        plt.plot(timestamps, data.target[::10], label="target")
+    if prediction:
+        plt.plot(timestamps, predicted[::10], label="prediction")
+    if sensors:
         plt.plot(timestamps, data.ambient[::10], label="ambient")
         plt.plot(timestamps, data.current[::10], label="current")
         plt.plot(timestamps, data.speed[::10], label="speed")
         plt.plot(timestamps, data.cooling[::10], label="cooling")
-    plt.plot(timestamps, predicted[::10], label="prediction")
     plt.title(title)
-    #plt.legend(loc="upper right")
     plt.xlabel("Time")
     plt.ylabel("Temperature in degree Celcius")
     plt.legend()
     if savepath:
-        #plt.savefig("it_works.pdf")
         plt.savefig(savepath)
     if show:
         plt.show()
     plt.close()
 
-def plot_raw(raw, predicted):
-    #plt.plot()
-    #plt.close()
-    pass
-
-if __name__ == "__main__":
-    #path = "../data/58.parquet"
-    #path = "../data/81.parquet"
-    #path = "../data/36.parquet"
-    path = "../data/7.parquet"
+def generate_plots_for(num):
+    path = f"../data/{num}.parquet"
     raw = read_measurement(path)
     window_lens = (1, 30000, 30000, 30000, 30000, 30000)
     data = preprocess_measurement(raw, window_lens)
     heat_transfer = generate_heat_equation(data)
     coeff = np.array([2.4e-6, 1e-8, 1.5e-6, 1e-5])
     predicted = solve_heat_equation(heat_transfer, data, coeff)
-    plot_all(data, predicted, "Measured data vs Predicted data", only_prediction=True, show=True,
-            savepath="../assets/7_measured_vs_predicted.pdf")
+
+    plot_all(raw, predicted, f"Raw sensor data ({path})", target=True, prediction=False, sensors=True,
+            show=False, savepath=f"../assets/pngs/{num}a_raw_sensor.png")
+
+    plot_all(data, predicted, f"Sensor data after preprocessing ({path})", target=True, prediction=False, sensors=True,
+            show=False, savepath=f"../assets/pngs/{num}b_sensors.png")
+
+    plot_all(data, predicted, f"Prediction based on other sensor data ({path})", target=True, prediction=True, sensors=True,
+            show=False, savepath=f"../assets/pngs/{num}c_prediction.png")
+
+    plot_all(data, predicted, f"Measured data vs Predicted data ({path})", target=True, prediction=True, sensors=False,
+            show=False, savepath=f"../assets/pngs/{num}d_sensor_vs_prediction.png")
+
+if __name__ == "__main__":
+    #path = "../data/58.parquet"
+    #path = "../data/81.parquet"
+    #path = "../data/36.parquet"
+    #num = 58
+    num = 7
+    #num = 3
+    generate_plots_for(num)
 
 sys.exit()
 
