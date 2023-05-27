@@ -1,7 +1,7 @@
 # try to bruteforce coefficients for the ode
 
 # import required packages
-from lib.training import *
+from approaches.training import *
 from lib.cutter import Cutter
 
 if __name__ == "__main__":
