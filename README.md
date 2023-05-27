@@ -8,6 +8,10 @@ ML data prediction of timeseries driving data
 ![](assets/2023-05-26-12-35-30.png)
 ![](assets/2023-05-26-01-20-04.png)
 
+## results
+
+![](assets/2023-05-27-12-26-09.png)
+
 ## tasks
 
 * [X] Getting data insights
