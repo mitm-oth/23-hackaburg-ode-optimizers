@@ -2,25 +2,16 @@
 
 ML data analysis of timeseries driving data
 
-data: <https://hackaburg-vitesco-challenge.s3.eu-central-1.amazonaws.com/measurements.zip>
+## data insights
 
-## coding instance
+![](assets/2023-05-26-23-46-46.png)
+![](assets/2023-05-26-12-35-30.png)
+![](assets/2023-05-26-01-20-04.png)
 
-`ssh ec2-user@ec2-34-242-2-109.eu-west-1.compute.amazonaws.com`
+## tasks
 
-## influxdb
-
-admin
-
-i~6@bib_e$,66Lk
-
-4twszgEIHmgV0NfWQOkLHpIp-XfQoMXgiBELM5RlTWCdedWxTaX0ktqkfruSORou0s8vdYedkrNQqV2lSVqDVw==
-
-
-
-## Tasks
-
-* [ ] Copying data into influx db
-* [ ] Splitting data in test and training data
-* [ ] Choosing a model
-* [ ] 
+* [X] Getting data insights
+* [X] ~~Copying data into influx db~~
+* [X] Splitting data in test and training data
+* [X] Choosing a model => ODE
+* [X] Try AWS SageMaker Canvas, DataWrangler, Studio AutoML
