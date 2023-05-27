@@ -48,6 +48,7 @@ def generate_heat_equation(data):
 def solve_heat_equation(heat_transfer, data, coeff):
     #coeff = np.array([2.4e-6, 1e-8, 1.5e-6, 1e-5])
     t_span = [data.time[0], data.time[-1]]
+    # Use and implicit method to solve our ODE
     sol = integrate.solve_ivp(heat_transfer, t_span, [data.ambient[0]], method="Radau", t_eval=data.time,
             dense_output=False, vectorized=True, args=coeff) #, rtol=1e-6, atol=1e-9)
 
