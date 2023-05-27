@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 from scipy import signal
-from cutter import Cutter
+from .cutter import Cutter
 from scipy.optimize import minimize
 
 IVP_METHOD = "Radau"
