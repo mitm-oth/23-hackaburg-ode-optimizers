@@ -10,30 +10,31 @@ import sys
 Measurement = namedtuple('Measurement', ['time', 'target', 'ambient', 'current', 'speed', 'cooling'])
 
 def read_measurement(path):
+    """ Read in raw data from the given parquet file
+    """
     df = pd.read_parquet(path)
-    
     time    = df["rtctime"].to_numpy()
     target  = df["target_temperature"].to_numpy()
     ambient = df["ambient_temp"].to_numpy()
     current = df["feature_c"].to_numpy()
     speed   = df["car_speed"].to_numpy()
     cooling = df["feature_ct"].to_numpy()
-
-    # Move timestamps into nicer range
-    #time -= time[0]
-
     return Measurement(time, target, ambient, current, speed, cooling)
 
 def running_mean(raw, window_len):
     return signal.convolve(raw, np.ones(window_len), 'valid') / window_len
 
 def preprocess_measurement(raw, window_lens):
+    """ Compute a running mean per data range
+    """
     max_window_len = max(window_lens)
     split_at = -len(raw[0]) + max_window_len
     processed = [running_mean(data, w_len)[split_at:] for data, w_len in zip(raw, window_lens)]
     return Measurement(*processed)
 
 def generate_heat_equation(data):
+    """ Return a callable which represents the right hand side of our ODE
+    """
     f_target = interpolate.interp1d(data.time, data.target)
     f_ambient = interpolate.interp1d(data.time, data.ambient)
     f_current = interpolate.interp1d(data.time, data.current)
@@ -46,6 +47,8 @@ def generate_heat_equation(data):
     return heat_transfer
 
 def solve_heat_equation(heat_transfer, data, coeff):
+    """ Calculate the predicted motor temperature based on the other sensor values
+    """
     #coeff = np.array([2.4e-6, 1e-8, 1.5e-6, 1e-5])
     t_span = [data.time[0], data.time[-1]]
     # Use and implicit method to solve our ODE
@@ -77,6 +80,8 @@ def plot_all(data, predicted, title, *, target=True, prediction=True, sensors=Tr
     plt.close()
 
 def generate_plots_for(num):
+    """ num is the parquet file number
+    """
     path = f"../data/{num}.parquet"
     raw = read_measurement(path)
     window_lens = (1, 30000, 30000, 30000, 30000, 30000)
