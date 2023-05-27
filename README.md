@@ -1,6 +1,6 @@
-# Hackaburg 2023
+# Hackaburg 2023 - ODEoptimizers
 
-ML data analysis of timeseries driving data
+ML data prediction of timeseries driving data
 
 ## data insights
 
